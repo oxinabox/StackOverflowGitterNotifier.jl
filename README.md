@@ -17,6 +17,6 @@ When first started it will post up to the last 30 questions from the last 48 hou
 It is currently set to key off the "julia-lang" tag.
 
 <br/><br/><br/><br/><br/>
-#Demo Screenshot
+### Demo Screenshot
 
 [![Demo](http://i.stack.imgur.com/WG7OL.png)](http://i.stack.imgur.com/WG7OL.png)
