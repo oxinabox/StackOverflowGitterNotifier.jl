@@ -3,9 +3,10 @@ using LightXML
 
 
 const TAGNAME = "julia-lang"
-const GITTER_WEBHOOK_URL = URI(ARGS[1]) #Don't go verion controlling the webook URL, that is onlt secure by obscurity.
+const GITTER_WEBHOOK_URL = URI(ARGS[1])
 const CHECK_INTERVAL = 60 #seconds
-last_checked = now() - Dates.Hour(48)
+const RETRY_INTERVAL = 60 #minutes
+last_checked = now() - Dates.Hour(24)
 
 immutable Question
     title::String
@@ -43,9 +44,9 @@ function get_new_questions!()
 end
 
 
-function send_gitter_activity(message::String)
+function send_gitter_activity(message::String, level = "info")
     println("Sending: ", message)
-    post(GITTER_WEBHOOK_URL; data = Dict("message" => message))
+    post(GITTER_WEBHOOK_URL; data = Dict("message" => message, "level" => level))
 end
 
 function format_question(question::Question)
@@ -65,6 +66,11 @@ end
 #
 
 while(true)
-    send_new_questions!()
-    sleep(CHECK_INTERVAL)
+	try    
+		send_new_questions!()
+		sleep(CHECK_INTERVAL)
+	catch ee 
+		send_gitter_activity("SO to Gitter: $ee Will rety in $(RETRY_INTERVAL) mins", "warn")
+		sleep(RETRY_INTERVAL*60)
+	end
 end
