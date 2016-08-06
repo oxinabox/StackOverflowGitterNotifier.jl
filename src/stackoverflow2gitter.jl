@@ -38,6 +38,7 @@ function select_new_questions(questions, last_checked)
     questions = filter(pp -> pp.published > last_checked, questions)
     if length(questions) > 0
         last_checked =  maximum([pp.published for pp in questions]) #Use the most resent question as the one to look for questions after
+    	println("updated last_checked: $(last_checked)")
     end
 
     questions, last_checked
@@ -74,15 +75,18 @@ function save_last_checked(prefix, last_checked)
 	open(prefix*LASTCHECKED_FILENAME_SUFFIX, "w") do fp
 		serialize(fp, last_checked)
 	end
+	println("Updated $prefix last check to $last_checked")
 end
 
 
 function main(prefix::String, siteurl::String, tag::String, gitter_webhook_url::URI)
 	last_checked = load_last_checked(prefix)
-	questions = get_questions(siteurl, tag)
-	new_questions, new_last_checked = select_new_questions(questions, last_checked)
+	@show last_checked
+	all_questions = get_questions(siteurl, tag)
+	new_questions, new_last_checked = select_new_questions(all_questions, last_checked)
 
-	for question in questions
+	
+	for question in new_questions
 		send_gitter_question(gitter_webhook_url, question, prefix)
 	end
 	
