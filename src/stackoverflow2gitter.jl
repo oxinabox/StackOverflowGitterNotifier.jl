@@ -2,16 +2,11 @@ using Requests
 using LightXML
 
 
-const TAGNAME = "julia-lang"
-const GITTER_WEBHOOK_URL = URI(ARGS[1])
-const CHECK_INTERVAL = 60 #seconds
-const RETRY_INTERVAL = 60 #minutes
-last_checked = now() - Dates.Hour(24)
 
 immutable Question
     title::String
     url :: URI
-    published :: DateTime
+    published :: DateTime  
 end
 
 function Question(entry::XMLElement)
@@ -22,8 +17,14 @@ function Question(entry::XMLElement)
     )
 end
 
-function get_questions()
-    feed_req = Requests.get("http://stackoverflow.com/feeds/tag"; query = Dict("tagnames" =>TAGNAME, "sort"=>"newest"))
+"""
+eg
+siteurl = "http://stackoverflow.com"
+tag = "julia-lang"
+"""
+function get_questions(siteurl, tag)
+    siteuri = URI(siteurl * "/feeds/tag")
+    feed_req = Requests.get(siteuri; query = Dict("tagnames" =>tag, "sort"=>"newest"))
     
     @assert(statuscode(feed_req)==200)
     feed_xml = parse_string(readall(feed_req))
@@ -33,44 +34,61 @@ function get_questions()
     map(Question, question_elements)
 end
 
-function get_new_questions!()
-    global last_checked
-    questions = filter(pp -> pp.published > last_checked, get_questions())
+function select_new_questions(questions, last_checked)
+    questions = filter(pp -> pp.published > last_checked, questions)
     if length(questions) > 0
         last_checked =  maximum([pp.published for pp in questions]) #Use the most resent question as the one to look for questions after
     end
 
-    questions
+    questions, last_checked
 end
 
 
-function send_gitter_activity(message::String, level = "info")
+function send_gitter_activity(webhook_url, message::String, level = "info")
     println("Sending: ", message)
-    post(GITTER_WEBHOOK_URL; data = Dict("message" => message, "level" => level))
+    post(webhook_url; data = Dict("message" => message, "level" => level))
 end
 
-function format_question(question::Question)
-    "SO: [$(question.title)]($(question.url))"
+function format_question(question::Question, prefix="")
+    "$(prefix): [$(question.title)]($(question.url))"
 end
 
-function send_gitter_question(question::Question)
-    send_gitter_activity(format_question(question))
+function send_gitter_question(webhook_url, question::Question, prefix)
+    send_gitter_activity(webhook_url, format_question(question, prefix))
 end
 
-function send_new_questions!()
-    map(send_gitter_question,  get_new_questions!())
-end
 
-#########################
-# Main Loop: just keep checkind sending for ever
-#
-
-while(true)
-	try    
-		send_new_questions!()
-		sleep(CHECK_INTERVAL)
-	catch ee 
-		send_gitter_activity("SO to Gitter: $ee Will rety in $(RETRY_INTERVAL) mins", "warn")
-		sleep(RETRY_INTERVAL*60)
+LASTCHECKED_FILENAME_SUFFIX = "_lastchecked.jsz"
+function load_last_checked(prefix)
+	try
+		open(prefix*LASTCHECKED_FILENAME_SUFFIX, "r") do fp
+			deserialize(fp)
+		end
+	catch ee
+		warn("Failed to load Last checked. Defaulting: $ee")
+		now() - Dates.Hour(24) 
 	end
 end
+
+function save_last_checked(prefix, last_checked)
+	open(prefix*LASTCHECKED_FILENAME_SUFFIX, "w") do fp
+		serialize(fp, last_checked)
+	end
+end
+
+
+function main(prefix::String, siteurl::String, tag::String, gitter_webhook_url::URI)
+	last_checked = load_last_checked(prefix)
+	questions = get_questions(siteurl, tag)
+	new_questions, new_last_checked = select_new_questions(questions, last_checked)
+
+	for question in questions
+		send_gitter_question(gitter_webhook_url, question, prefix)
+	end
+	
+	save_last_checked(prefix, new_last_checked)
+end
+
+main(ARGS[1], ARGS[2], ARGS[3], URI(ARGS[4]))
+
+
