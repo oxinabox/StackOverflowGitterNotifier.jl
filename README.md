@@ -5,16 +5,18 @@ GitterBots I've made for Julia. Currently just a bot that puts questions on Stac
 Run with
 
 ```
-julia src/stackoverflow2gitter.jl https://webhooks.gitter.im/e/a9a6a5f25...
+julia src/stackoverflow2gitter.jl  SO http://www.stackoverflow.com julia-lang https://webhooks.gitter.im/e/a9a6a5f25..
+
 ```
 
-where the URL at the end is the Webhook URL you get from the Gitter, Notifications -> Custom integration.
+ - 1st arg is the Prefix, which is shown in the activity bar
+ - 2nd is the site to query, anything for the stack exchange network should work
+ - 3rd is that tag to track
+ - 4th is the Webhook URL you get from the Gitter, Notifications -> Custom integration.
 Note that to get/create this URL you need to be a admin for the Gitter Channel
 
+Run the script using cron, or a similar schedualler.
 
-This script runs forever, polling and posting questions every 60 seconds (by default -- config at top of file).
-When first started it will post up to the last 30 questions from the last 48 hours.
-It is currently set to key off the "julia-lang" tag.
 
 <br/><br/><br/><br/><br/>
 ### Demo Screenshot
