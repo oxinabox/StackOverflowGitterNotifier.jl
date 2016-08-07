@@ -81,7 +81,6 @@ end
 
 function main(prefix::String, siteurl::String, tag::String, gitter_webhook_url::URI)
 	last_checked = load_last_checked(prefix)
-	@show last_checked
 	all_questions = get_questions(siteurl, tag)
 	new_questions, new_last_checked = select_new_questions(all_questions, last_checked)
 
