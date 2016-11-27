@@ -1,5 +1,4 @@
-# GitterBots.jl
-GitterBots I've made for Julia. Currently just a bot that puts questions on StackOverflow into the sidebar
+# StackOverflowGitterNotifier.jl
 
 
 Run with
@@ -15,7 +14,10 @@ julia src/stackoverflow2gitter.jl  SO http://www.stackoverflow.com julia-lang ht
  - 4th is the Webhook URL you get from the Gitter, Notifications -> Custom integration.
 Note that to get/create this URL you need to be a admin for the Gitter Channel
 
-Run the script using cron, or a similar schedualler.
+
+Each time the script is run, it will push any new questions with the tag, to the gitter webhook URL.
+
+Run the script using cron, or a similar schedualler, eg every 5 minutes
 
 
 <br/><br/><br/><br/><br/>
