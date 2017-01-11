@@ -1,6 +1,6 @@
 #!/bin/sh
 export GITTERWEBHOOK="https://webhooks.gitter.im/e/aaaadddb22232323a"
-export SCRIPT="GitterBots.jl/src/stackoverflow2gitter.jl"
+export SCRIPT="StackOverflowGitterNotifier.jl/src/stackoverflow2gitter.jl"
 echo "----------------"
 date
 echo "---"
