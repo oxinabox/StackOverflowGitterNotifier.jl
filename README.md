@@ -18,7 +18,12 @@ Note that to get/create this URL you need to be a admin for the Gitter Channel
 
 Each time the script is run, it will push any new questions with the tag, to the gitter webhook URL.
 
-Run the script using cron, or a similar schedualler, eg every 5 minutes
+Run the script using cron, or a similar schedualler, eg every 5 minutes:
+by adding to your crontab (using `contab -e`) something like:
+
+```
+*/5 * * * * /home/ubuntu/.julia/v0.5/StackOverflowGitterNotifier.jl/src/example_run.sh >> /home/ubuntu/.julia/v0.5/StackOverflowGitterNotifier.jl/runlog.log 2>&1
+```
 
 ## Installation
 
