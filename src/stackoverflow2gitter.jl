@@ -27,7 +27,7 @@ function get_questions(siteurl, tag)
     feed_req = Requests.get(siteuri; query = Dict("tagnames" =>tag, "sort"=>"newest"))
     
     @assert(statuscode(feed_req)==200)
-    feed_xml = parse_string(readall(feed_req))
+    feed_xml = parse_string(String(read(feed_req)))
     xroot = root(feed_xml)
     question_elements = get_elements_by_tagname(xroot, "entry")
 
