@@ -3,7 +3,7 @@ using LightXML
 
 
 
-immutable Question
+struct Question
     title::String
     url :: URI
     published :: DateTime  
